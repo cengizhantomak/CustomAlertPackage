@@ -89,8 +89,8 @@ struct CustomAlert: View {
             HStack(spacing: 0) {
                 // Left Button
                 Button(role: .cancel) {
-                    IsPresented = false
                     LeftButton()
+                    IsPresented = false
                 } label: {
                     Text(LeftButtonText)
                         .font(.system(size: 17))
@@ -109,8 +109,8 @@ struct CustomAlert: View {
                         .foregroundColor(.white)
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 }
-                .background(Color.RedButtonColor.opacity(0.8))
-                .disabled(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
+                .background(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false ? Color.gray : Color.RedButtonColor.opacity(0.8))
+                .disabled(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false)
             }
             .frame(width: 341, height: 63)
         }
@@ -130,7 +130,7 @@ extension View {
     public func CustomAlert(IsPresented: Binding<Bool>, Title: String, ImageSystemName: String? = nil, Message: String? = nil, TextField: TextFieldParams? = nil, RightButton: @escaping () -> Void, RightButtonText: String, LeftButton: @escaping () -> Void, LeftButtonText: String) -> some View {
         self.modifier(
             CustomAlertModifier(
-                isPresented: IsPresented,
+                IsPresented: IsPresented,
                 Title: Title,
                 ImageSystemName: ImageSystemName,
                 Message: Message,
@@ -145,7 +145,7 @@ extension View {
 }
 
 struct CustomAlertModifier: ViewModifier {
-    @Binding var isPresented: Bool
+    @Binding var IsPresented: Bool
     let Title: String
     let ImageSystemName: String?
     let Message: String?
@@ -159,13 +159,13 @@ struct CustomAlertModifier: ViewModifier {
         
         content
             .overlay {
-                if isPresented {
+                if IsPresented {
                     Color.black
                         .opacity(0.68)
                         .edgesIgnoringSafeArea(.all)
                     
                     CustomAlert(
-                        IsPresented: $isPresented,
+                        IsPresented: $IsPresented,
                         Title: Title,
                         ImageSystemName: ImageSystemName,
                         Message: Message,
@@ -177,6 +177,6 @@ struct CustomAlertModifier: ViewModifier {
                     )
                 }
             }
-            .animation(.spring, value: isPresented)
+            .animation(.spring, value: IsPresented)
     }
 }
