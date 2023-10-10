@@ -19,14 +19,20 @@ public struct TextFieldParams {
 
 struct CustomAlert: View {
     @Binding var IsPresented: Bool
+    @State private var isLabelLeftButtonClicked: Bool = false
+    @State private var isLabelRightButtonClicked: Bool = false
     let Title: String
     let ImageSystemName: String?
     let Message: String?
     var TextFieldParams: TextFieldParams?
-    let RightButton: () -> Void
-    let RightButtonText: String
+    @Binding var isLeftButtonRed: Bool?
+    let LabelLeftButton: (() -> Void)?
+    @Binding var isRightButtonRed: Bool?
+    let LabelRightButton: (() -> Void)?
     let LeftButton: () -> Void
     let LeftButtonText: String
+    let RightButton: () -> Void
+    let RightButtonText: String
     
     var body: some View {
         VStack(spacing: 0) {
@@ -74,15 +80,34 @@ struct CustomAlert: View {
                 .padding(.horizontal)
                 .frame(width: 341, height: 69)
                 .background(Color.TextFieldColor)
-                
+            }
+            
+            if let ActionLeft = LabelLeftButton, let ActionRight = LabelRightButton {
                 HStack {
-                    Label("Add Favorite", systemImage: "heart")
-                        .padding(.horizontal)
-                    Label("Pin", systemImage: "pin")
+                    //                if let Action = LabelLeftButton {
+                    Button {
+                        //                        isLabelLeftButtonClicked.toggle()
+                        ActionLeft()
+                    } label: {
+                        Label("Add Favorite", systemImage: "heart")
+                            .padding(.horizontal)
+                            .foregroundColor(isLeftButtonRed ?? false ? .red : .primary.opacity(0.5))
+                    }
+                    //                }
+                    
+                    //                if let Action = LabelRightButton {
+                    Button {
+                        //                        isLabelRightButtonClicked.toggle()
+                        ActionRight()
+                    } label: {
+                        Label("Pin", systemImage: "pin")
+                            .foregroundColor(isRightButtonRed ?? false ? .red : .primary.opacity(0.5))
+                    }
+                    //                }
+                    
                     Spacer()
                 }
                 .frame(width: 341, height: 80)
-                .foregroundStyle(.primary.opacity(0.5))
             }
             
             // Buttons
@@ -109,7 +134,7 @@ struct CustomAlert: View {
                         .foregroundColor(.white)
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 }
-                .background(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false ? Color.gray : Color.RedButtonColor.opacity(0.8))
+                .background(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false ? Color.secondary : Color.RedButtonColor.opacity(0.8))
                 .disabled(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false)
             }
             .frame(width: 341, height: 63)
@@ -127,7 +152,19 @@ struct CustomAlert: View {
 }
 
 extension View {
-    public func CustomAlert(IsPresented: Binding<Bool>, Title: String, ImageSystemName: String? = nil, Message: String? = nil, TextField: TextFieldParams? = nil, RightButton: @escaping () -> Void, RightButtonText: String, LeftButton: @escaping () -> Void, LeftButtonText: String) -> some View {
+    public func CustomAlert(IsPresented: Binding<Bool>,
+                            Title: String,
+                            ImageSystemName: String? = nil,
+                            Message: String? = nil,
+                            TextField: TextFieldParams? = nil,
+                            isLeftButtonRed: Binding<Bool?>? = nil,
+                            LabelLeftButton: (() -> Void)? = nil,
+                            isRightButtonRed: Binding<Bool?>? = nil,
+                            LabelRightButton: (() -> Void)? = nil,
+                            LeftButton: @escaping () -> Void,
+                            LeftButtonText: String,
+                            RightButton: @escaping () -> Void,
+                            RightButtonText: String) -> some View {
         self.modifier(
             CustomAlertModifier(
                 IsPresented: IsPresented,
@@ -135,10 +172,14 @@ extension View {
                 ImageSystemName: ImageSystemName,
                 Message: Message,
                 TextFieldParams: TextField,
-                RightButton: RightButton,
-                RightButtonText: RightButtonText,
+                isLeftButtonRed: isLeftButtonRed ?? .constant(false),
+                LabelLeftButton: LabelLeftButton,
+                isRightButtonRed: isRightButtonRed ?? .constant(false),
+                LabelRightButton: LabelRightButton,
                 LeftButton: LeftButton,
-                LeftButtonText: LeftButtonText
+                LeftButtonText: LeftButtonText,
+                RightButton: RightButton,
+                RightButtonText: RightButtonText
             )
         )
     }
@@ -150,10 +191,14 @@ struct CustomAlertModifier: ViewModifier {
     let ImageSystemName: String?
     let Message: String?
     var TextFieldParams: TextFieldParams?
-    let RightButton: () -> Void
-    let RightButtonText: String
+    @Binding var isLeftButtonRed: Bool?
+    let LabelLeftButton: (() -> Void)?
+    @Binding var isRightButtonRed: Bool?
+    let LabelRightButton: (() -> Void)?
     let LeftButton: () -> Void
     let LeftButtonText: String
+    let RightButton: () -> Void
+    let RightButtonText: String
     
     func body(content: Content) -> some View {
         
@@ -170,10 +215,14 @@ struct CustomAlertModifier: ViewModifier {
                         ImageSystemName: ImageSystemName,
                         Message: Message,
                         TextFieldParams: TextFieldParams,
-                        RightButton: RightButton,
-                        RightButtonText: RightButtonText,
+                        isLeftButtonRed: $isLeftButtonRed,
+                        LabelLeftButton: LabelLeftButton,
+                        isRightButtonRed: $isRightButtonRed,
+                        LabelRightButton: LabelRightButton,
                         LeftButton: LeftButton,
-                        LeftButtonText: LeftButtonText
+                        LeftButtonText: LeftButtonText,
+                        RightButton: RightButton,
+                        RightButtonText: RightButtonText
                     )
                 }
             }
