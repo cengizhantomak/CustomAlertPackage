@@ -1,2 +1,176 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
+//
+//  Color+Extension.swift
+//
+//
+//  Created by Cengizhan Tomak on 10.10.2023.
+//
+
+import SwiftUI
+
+public struct TextFieldParams {
+    var Placeholder: String
+    var Text: Binding<String>
+    
+    public init(Placeholder: String, Text: Binding<String>) {
+        self.Placeholder = Placeholder
+        self.Text = Text
+    }
+}
+
+struct CustomAlert: View {
+    @Binding var IsPresented: Bool
+    let Title: String
+    let ImageSystemName: String?
+    let Message: String?
+    var TextFieldParams: TextFieldParams?
+    let RightButton: () -> Void
+    let RightButtonText: String
+    let LeftButton: () -> Void
+    let LeftButtonText: String
+    
+//    @Environment(\.colorScheme) var colorScheme
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(Title)
+                    .font(.system(size: 25, weight: .medium))
+                Spacer()
+                if let ImageSystemName = ImageSystemName {
+                    Image(systemName: ImageSystemName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 35, height: 30)
+                }
+            }
+            .padding(.horizontal)
+            .frame(width: 341, height: 85)
+            .foregroundStyle(.primary)
+            //            .padding(.vertical, 25)
+            
+            if let MessageText = Message {
+                Text(MessageText)
+                    .font(.system(size: 17))
+                    .multilineTextAlignment(.center)
+                    .frame(width: 341, height: 69, alignment: .top)
+            }
+            
+            if let TextFieldParams = TextFieldParams {
+                VStack(alignment: .leading) {
+                    Text("NAME")
+                        .foregroundColor(.primary.opacity(0.5))
+                        .font(.system(size: 10, weight: .bold))
+                        .padding(.top, 9)
+                    Spacer()
+                    TextField(TextFieldParams.Placeholder, text: TextFieldParams.Text)
+                        .font(.system(size: 20))
+                        .padding(.bottom, 17)
+                }
+                .padding(.horizontal)
+                //                    .padding(.vertical, 15)
+                .frame(width: 341, height: 69)
+                .background(Color.TextFieldColor)
+                
+                
+                HStack {
+                    Label("Add Favorite", systemImage: "heart")
+                        .padding(.horizontal)
+                    Label("Pin", systemImage: "pin")
+                    Spacer()
+                }
+                .frame(width: 341, height: 80)
+                .foregroundStyle(.primary.opacity(0.5))
+                //            .padding(.vertical, 30)
+            }
+            
+            HStack(spacing: 0) {
+                // left button
+                Button(role: .cancel) {
+                    IsPresented = false
+                    LeftButton()
+                } label: {
+                    Text(LeftButtonText)
+                        .font(.system(size: 17))
+                        .foregroundColor(.primary.opacity(0.8))
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                }
+                .background(Color.CancelButtonColor)
+                
+                // right button (default)
+                Button(role: .destructive) {
+                    RightButton()
+                    IsPresented = false
+                } label: {
+                    Text(RightButtonText)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.white)
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                }
+                .background(Color.RedButtonColor)
+                .disabled(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
+            }
+            .frame(width: 341, height: 63)
+        }
+        .frame(width: 341)
+//        .background(colorScheme == .dark ? Color(red: 0.15, green: 0.15, blue: 0.15) : Color.white)
+                    
+                    .background(Color.AlertColor)
+        .opacity(0.95)
+        //        .border(Color(.border), width: 1)
+        .cornerRadius(18)
+        .shadow(radius: 25)
+    }
+}
+
+extension View {
+    public func CustomAlert(IsPresented: Binding<Bool>, Title: String, ImageSystemName: String? = nil, Message: String? = nil, TextField: TextFieldParams? = nil, RightButton: @escaping () -> Void, RightButtonText: String, LeftButton: @escaping () -> Void, LeftButtonText: String) -> some View {
+        self.modifier(
+            CustomAlertModifier(
+                isPresented: IsPresented,
+                Title: Title,
+                ImageSystemName: ImageSystemName,
+                Message: Message,
+                TextFieldParams: TextField,
+                RightButton: RightButton,
+                RightButtonText: RightButtonText,
+                LeftButton: LeftButton,
+                LeftButtonText: LeftButtonText
+            )
+        )
+    }
+}
+
+struct CustomAlertModifier: ViewModifier {
+    @Binding var isPresented: Bool
+    let Title: String
+    let ImageSystemName: String?
+    let Message: String?
+    var TextFieldParams: TextFieldParams?
+    let RightButton: () -> Void
+    let RightButtonText: String
+    let LeftButton: () -> Void
+    let LeftButtonText: String
+    
+    func body(content: Content) -> some View {
+        ZStack {
+            content
+            if isPresented {
+                Color.black
+                    .opacity(0.3)
+                    .edgesIgnoringSafeArea(.all)
+                
+                CustomAlert(
+                    IsPresented: $isPresented,
+                    Title: Title,
+                    ImageSystemName: ImageSystemName,
+                    Message: Message,
+                    TextFieldParams: TextFieldParams,
+                    RightButton: RightButton,
+                    RightButtonText: RightButtonText,
+                    LeftButton: LeftButton,
+                    LeftButtonText: LeftButtonText
+                )
+            }
+        }
+    }
+}
