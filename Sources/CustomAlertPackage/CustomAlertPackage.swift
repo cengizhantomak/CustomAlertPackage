@@ -7,7 +7,17 @@
 
 import SwiftUI
 
-public struct TextFieldParams {
+public struct Title {
+    var Text: String
+    var SystemImage: String?
+    
+    public init(Text: String, SystemImage: String? = nil) {
+        self.Text = Text
+        self.SystemImage = SystemImage
+    }
+}
+
+public struct TextFieldText {
     var Placeholder: String
     var Text: Binding<String>
     
@@ -17,34 +27,52 @@ public struct TextFieldParams {
     }
 }
 
+public struct LabelButton {
+    var Text: String
+    var SystemImage: String
+    var Binding: Binding<Bool>
+    var Action: (() -> Void)
+    
+    public init(Text: String, SystemImage: String, Binding: Binding<Bool>, Action: @escaping () -> Void) {
+        self.Text = Text
+        self.SystemImage = SystemImage
+        self.Binding = Binding
+        self.Action = Action
+    }
+}
+
+public struct AlertButton {
+    var Text: String
+    var Action: (() -> Void)
+    
+    public init(Text: String, Action: @escaping () -> Void) {
+        self.Text = Text
+        self.Action = Action
+    }
+}
+
 struct CustomAlert: View {
     @Binding var IsPresented: Bool
-    @State private var isLabelLeftButtonClicked: Bool = false
     @State private var isLabelRightButtonClicked: Bool = false
-    let Title: String
-    let ImageSystemName: String?
+    let Title: Title
     let Message: String?
-    var TextFieldParams: TextFieldParams?
-    @Binding var isLeftButtonRed: Bool?
-    let LabelLeftButton: (() -> Void)?
-    @Binding var isRightButtonRed: Bool?
-    let LabelRightButton: (() -> Void)?
-    let LeftButton: () -> Void
-    let LeftButtonText: String
-    let RightButton: () -> Void
-    let RightButtonText: String
+    var TextFieldText: TextFieldText?
+    var LabelLeft: LabelButton?
+    var LabelRight: LabelButton?
+    var ButtonLeft: AlertButton
+    var ButtonRight: AlertButton
     
     var body: some View {
         VStack(spacing: 0) {
             
-            // Title - SystemImage?(Optional)
+            // MARK: - Title - SystemImage?(Optional)
             HStack {
-                Text(Title)
+                Text(Title.Text)
                     .font(.system(size: 25, weight: .medium))
                 
                 Spacer()
                 
-                if let ImageSystemName = ImageSystemName {
+                if let ImageSystemName = Title.SystemImage {
                     Image(systemName: ImageSystemName)
                         .resizable()
                         .scaledToFit()
@@ -55,7 +83,7 @@ struct CustomAlert: View {
             .frame(width: 341, height: 85)
             .foregroundStyle(.primary)
             
-            // Message? (Optional)
+            // MARK: - Message? (Optional)
             if let MessageText = Message {
                 Text(MessageText)
                     .font(.system(size: 17))
@@ -63,8 +91,8 @@ struct CustomAlert: View {
                     .frame(width: 341, height: 69, alignment: .top)
             }
             
-            // TextField? (Optional)
-            if let TextFieldParams = TextFieldParams {
+            // MARK: - TextField? (Optional)
+            if let TextFieldParams = TextFieldText {
                 VStack(alignment: .leading) {
                     Text("NAME")
                         .foregroundColor(.primary.opacity(0.5))
@@ -82,42 +110,41 @@ struct CustomAlert: View {
                 .background(Color.TextFieldColor)
             }
             
-            if let ActionLeft = LabelLeftButton, let ActionRight = LabelRightButton {
+            // MARK: - Label? (Optional)
+            if LabelLeft != nil || LabelRight != nil {
                 HStack {
-                    //                if let Action = LabelLeftButton {
-                    Button {
-                        //                        isLabelLeftButtonClicked.toggle()
-                        ActionLeft()
-                    } label: {
-                        Label("Add Favorite", systemImage: "heart")
-                            .padding(.horizontal)
-                            .foregroundColor(isLeftButtonRed ?? false ? .red : .primary.opacity(0.5))
+                    if let LabelLeft = LabelLeft {
+                        Button {
+                            LabelLeft.Action()
+                        } label: {
+                            Label(LabelLeft.Text, systemImage: LabelLeft.SystemImage)
+                                .padding(.horizontal)
+                                .foregroundColor(LabelLeft.Binding.wrappedValue ? .red : .primary.opacity(0.5))
+                        }
                     }
-                    //                }
                     
-                    //                if let Action = LabelRightButton {
-                    Button {
-                        //                        isLabelRightButtonClicked.toggle()
-                        ActionRight()
-                    } label: {
-                        Label("Pin", systemImage: "pin")
-                            .foregroundColor(isRightButtonRed ?? false ? .red : .primary.opacity(0.5))
+                    if let LabelRight = LabelRight {
+                        Button {
+                            LabelRight.Action()
+                        } label: {
+                            Label(LabelRight.Text, systemImage: LabelRight.SystemImage)
+                                .foregroundColor(LabelRight.Binding.wrappedValue ? .red : .primary.opacity(0.5))
+                        }
                     }
-                    //                }
                     
                     Spacer()
                 }
                 .frame(width: 341, height: 80)
             }
             
-            // Buttons
+            // MARK: - Buttons
             HStack(spacing: 0) {
                 // Left Button
-                Button(role: .cancel) {
-                    LeftButton()
+                Button {
+                    ButtonLeft.Action()
                     IsPresented = false
                 } label: {
-                    Text(LeftButtonText)
+                    Text(ButtonLeft.Text)
                         .font(.system(size: 17))
                         .foregroundColor(.primary.opacity(0.8))
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
@@ -125,17 +152,17 @@ struct CustomAlert: View {
                 .background(Color.CancelButtonColor.opacity(0.8))
                 
                 // Right Button (RedColor)
-                Button(role: .destructive) {
-                    RightButton()
+                Button {
+                    ButtonRight.Action()
                     IsPresented = false
                 } label: {
-                    Text(RightButtonText)
+                    Text(ButtonRight.Text)
                         .font(.system(size: 17, weight: .medium))
                         .foregroundColor(.white)
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 }
-                .background(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false ? Color.secondary : Color.RedButtonColor.opacity(0.8))
-                .disabled(TextFieldParams?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false)
+                .background(TextFieldText?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false ? Color.secondary : Color.RedButtonColor.opacity(0.8))
+                .disabled(TextFieldText?.Text.wrappedValue.trimmingCharacters(in: .whitespaces).isEmpty ?? false)
             }
             .frame(width: 341, height: 63)
         }
@@ -153,33 +180,23 @@ struct CustomAlert: View {
 
 extension View {
     public func CustomAlert(IsPresented: Binding<Bool>,
-                            Title: String,
-                            ImageSystemName: String? = nil,
+                            Title: Title,
                             Message: String? = nil,
-                            TextField: TextFieldParams? = nil,
-                            isLeftButtonRed: Binding<Bool?>? = nil,
-                            LabelLeftButton: (() -> Void)? = nil,
-                            isRightButtonRed: Binding<Bool?>? = nil,
-                            LabelRightButton: (() -> Void)? = nil,
-                            LeftButton: @escaping () -> Void,
-                            LeftButtonText: String,
-                            RightButton: @escaping () -> Void,
-                            RightButtonText: String) -> some View {
+                            TextField: TextFieldText? = nil,
+                            LabelLeft: LabelButton? = nil,
+                            LabelRight: LabelButton? = nil,
+                            ButtonLeft: AlertButton,
+                            ButtonRight: AlertButton) -> some View {
         self.modifier(
             CustomAlertModifier(
                 IsPresented: IsPresented,
                 Title: Title,
-                ImageSystemName: ImageSystemName,
                 Message: Message,
-                TextFieldParams: TextField,
-                isLeftButtonRed: isLeftButtonRed ?? .constant(false),
-                LabelLeftButton: LabelLeftButton,
-                isRightButtonRed: isRightButtonRed ?? .constant(false),
-                LabelRightButton: LabelRightButton,
-                LeftButton: LeftButton,
-                LeftButtonText: LeftButtonText,
-                RightButton: RightButton,
-                RightButtonText: RightButtonText
+                TextFieldText: TextField,
+                LabelLeft: LabelLeft,
+                LabelRight: LabelRight,
+                ButtonLeft: ButtonLeft,
+                ButtonRight: ButtonRight
             )
         )
     }
@@ -187,18 +204,13 @@ extension View {
 
 struct CustomAlertModifier: ViewModifier {
     @Binding var IsPresented: Bool
-    let Title: String
-    let ImageSystemName: String?
+    let Title: Title
     let Message: String?
-    var TextFieldParams: TextFieldParams?
-    @Binding var isLeftButtonRed: Bool?
-    let LabelLeftButton: (() -> Void)?
-    @Binding var isRightButtonRed: Bool?
-    let LabelRightButton: (() -> Void)?
-    let LeftButton: () -> Void
-    let LeftButtonText: String
-    let RightButton: () -> Void
-    let RightButtonText: String
+    var TextFieldText: TextFieldText?
+    var LabelLeft: LabelButton?
+    var LabelRight: LabelButton?
+    var ButtonLeft: AlertButton
+    var ButtonRight: AlertButton
     
     func body(content: Content) -> some View {
         
@@ -212,17 +224,12 @@ struct CustomAlertModifier: ViewModifier {
                     CustomAlert(
                         IsPresented: $IsPresented,
                         Title: Title,
-                        ImageSystemName: ImageSystemName,
                         Message: Message,
-                        TextFieldParams: TextFieldParams,
-                        isLeftButtonRed: $isLeftButtonRed,
-                        LabelLeftButton: LabelLeftButton,
-                        isRightButtonRed: $isRightButtonRed,
-                        LabelRightButton: LabelRightButton,
-                        LeftButton: LeftButton,
-                        LeftButtonText: LeftButtonText,
-                        RightButton: RightButton,
-                        RightButtonText: RightButtonText
+                        TextFieldText: TextFieldText,
+                        LabelLeft: LabelLeft,
+                        LabelRight: LabelRight,
+                        ButtonLeft: ButtonLeft,
+                        ButtonRight: ButtonRight
                     )
                 }
             }
