@@ -147,6 +147,7 @@ public struct CustomAlert: View {
                                         .padding(.horizontal)
                                         .foregroundColor(LabelLeft.Binding.wrappedValue ? .red : .primary.opacity(0.5))
                                 }
+                                .buttonStyle(NoEffectButtonStyle())
                             }
                             
                             if let LabelRight = LabelRight {
@@ -156,6 +157,7 @@ public struct CustomAlert: View {
                                     Label(LabelRight.Text, systemImage: LabelRight.SystemImage)
                                         .foregroundColor(LabelRight.Binding.wrappedValue ? .red : .primary.opacity(0.5))
                                 }
+                                .buttonStyle(NoEffectButtonStyle())
                             }
                             
                             Spacer()
@@ -203,7 +205,13 @@ public struct CustomAlert: View {
                 )
             }
         }
-        .animation(.spring, value: IsPresented)
+        .animation(.default, value: IsPresented)
+    }
+}
+
+struct NoEffectButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
     }
 }
 
