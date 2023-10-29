@@ -51,9 +51,15 @@ public struct AlertButton {
     }
 }
 
+struct NoEffectButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+    }
+}
+
 public struct CustomAlert: View {
     @Binding var IsPresented: Bool
-    @State private var isLabelRightButtonClicked: Bool = false
+    @FocusState private var IsTextFieldFocused: Bool
     let Title: Title
     let Message: String?
     var TextFieldText: TextFieldText?
@@ -128,6 +134,7 @@ public struct CustomAlert: View {
                             Spacer()
                             
                             TextField(TextFieldParams.Placeholder, text: TextFieldParams.Text)
+                                .focused($IsTextFieldFocused)
                                 .font(.system(size: 20))
                                 .padding(.bottom, 17)
                         }
@@ -206,12 +213,13 @@ public struct CustomAlert: View {
             }
         }
         .animation(.default, value: IsPresented)
-    }
-}
-
-struct NoEffectButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        .onChange(of: IsPresented) { NewValue in
+            if NewValue {
+                IsTextFieldFocused = true
+            } else {
+                IsTextFieldFocused = false
+            }
+        }
     }
 }
 
